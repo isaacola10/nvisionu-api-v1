@@ -1,3 +1,4 @@
+
 const EVENT = require("../models/event.model")
 const {EventStatuses} = require("../../config/constant");
 
@@ -17,7 +18,7 @@ async function GetEventByParam(param) {
   return EVENT.findOne(param)
 }
 
-async function CreateEvent(title, description, schedule_type, locations, event_image, event_additional_images, payment, additional_data, session=null) {
+async function CreateEvent(title, description, schedule_type, locations, event_image, event_additional_images, session=null) {
   await UpdateEvents()
 
   return new EVENT({
@@ -27,12 +28,10 @@ async function CreateEvent(title, description, schedule_type, locations, event_i
     locations,
     event_image,
     event_additional_images,
-    payment,
-    additional_data
   }).save({session})
 }
 
-async function UpdateEvent(event, title, description, schedule_type, locations, event_image, event_additional_images, payment, additional_data, session=null) {
+async function UpdateEvent(event, title, description, schedule_type, locations, event_image, event_additional_images, session=null) {
   return EVENT.findOneAndUpdate({uuid: event.uuid}, {
     title,
     description,
@@ -40,8 +39,6 @@ async function UpdateEvent(event, title, description, schedule_type, locations, 
     locations,
     event_image,
     event_additional_images,
-    payment,
-    additional_data
   }, {new: true, session})
 }
 

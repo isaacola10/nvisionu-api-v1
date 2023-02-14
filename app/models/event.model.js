@@ -26,20 +26,11 @@ const EventSchema = new mongoose.Schema({
     type: Object,
     required: false
   },
-  payment: {
-    type: String,
-    required: true
-  },
   event_image: {
     type: String,
     required: true
   },
   event_additional_images: {
-    type: Object,
-    required: false,
-    default: null
-  },
-  additional_data: {
     type: Object,
     required: false,
     default: null
