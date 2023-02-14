@@ -137,16 +137,28 @@ async function update(request, response) {
     if (!event) {
       return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Event not found" });
     }
-    let additional_data = [];
-    for (const add_data of value.additional_data) {
-      additional_data.push({
-        type: add_data.type,
-        amount: add_data.amount,
-        slug: slug(add_data.type),
+    let locations = [];
+    for (const location of value.locations) {
+      let t_prices = [];
+      for (const t_type of location.ticket_prices) {
+        t_prices.push({
+          type: t_type.type,
+          amount: t_type.amount,
+          slug: slug(t_type.type),
+        });
+      }
+      locations.push({
+        title: location.title,
+        location: location.location,
+        date: location.date,
+        time: location.time,
+        venue: location.venue,
+        ticket_prices: t_prices,
+        slug: slug(location.title),
       });
     }
     // Update event
-    await UpdateEvent(event, value.title, value.description, value.schedule_type, value.locations, value.image, value.additional_images, value.payment, additional_data);
+    await UpdateEvent(event, value.title, value.description, value.schedule_type, locations, value.image, value.additional_images);
     return response.status(StatusCodes.OK).json({
       message: "Event updated successfully",
     });

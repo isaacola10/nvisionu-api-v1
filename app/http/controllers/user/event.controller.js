@@ -41,6 +41,11 @@ async function book(request, response) {
     let locations = [];
 
     const event = await GetEvent(request.params.uuid);
+
+    if(value.num_of_tickets !== value.emails.length) {
+      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Number of tickets do not match number of emails." });
+    }
+
     if (!event) {
       return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Event not found" });
     }
