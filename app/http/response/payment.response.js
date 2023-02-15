@@ -1,7 +1,10 @@
 function PaymentResponse(payment) {
   return {
     id: payment.uuid,
-    event_id: payment.event_id,
+    event: {
+      id: payment.event_id.uuid,
+      title: payment.event_id.title,
+    },
     transaction_id: payment.transaction_id,
     name: payment.name,
     email: payment.email,

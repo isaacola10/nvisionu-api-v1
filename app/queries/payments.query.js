@@ -1,7 +1,7 @@
 const PAYMENT = require("../models/payment.model")
 
 async function GetAllPayments() {
-  return PAYMENT.find({})
+  return PAYMENT.find({}).populate({ path: "event_id", model: "Event" })
 }
 
 async function GetPaymentByUUID(uuid) {
