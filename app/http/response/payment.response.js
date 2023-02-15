@@ -5,6 +5,7 @@ function PaymentResponse(payment) {
     transaction_id: payment.transaction_id,
     name: payment.name,
     email: payment.email,
+    amount: payment.amount,
     meta: payment.meta,
     status: payment.status
   }

@@ -3,7 +3,7 @@ const EVENT = require("../models/event.model")
 const {EventStatuses} = require("../../config/constant");
 
 async function GetAllEvents() {
-  return EVENT.find({})
+  return EVENT.find({}).sort({createdAt: -1})
 }
 
 async function GetActiveEvent() {

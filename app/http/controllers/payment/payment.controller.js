@@ -9,7 +9,7 @@ async function initialize(event, currency, value, amount) {
     amount: amount * 100
   }
   data = await initializePayment(PaystackData)
-  const payment = await CreatePayment(data.data.reference, event, value.name, value.emails[0], data.data)
+  const payment = await CreatePayment(data.data.reference, event, value.name, value.emails[0], amount, data.data)
   return {paymentData: data, payment}
 }
 

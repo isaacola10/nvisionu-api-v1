@@ -12,12 +12,13 @@ async function GetPaymentByTrxID(transaction_id) {
   return PAYMENT.findOne({transaction_id})
 }
 
-async function CreatePayment(transaction_id, event, name, email, meta) {
+async function CreatePayment(transaction_id, event, name, email, amount, meta) {
   return new PAYMENT({
     transaction_id,
     event_id: event._id,
     name,
     email,
+    amount,
     meta
   }).save({})
 }
