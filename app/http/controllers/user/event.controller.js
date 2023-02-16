@@ -1,6 +1,6 @@
 const { StatusCodes, UNPROCESSABLE_ENTITY } = require("http-status-codes");
 const Joi = require("joi");
-const { GetActiveEvent, GetEvent, CreateRsvp, GetPaymentByTrxID, GetEventByParam, GetRsvpByEventID, UpdateRsvpStatus, UpdateManyRsvpStatus, GetRsvpByEmail, FindRsvpByEmailAndEvent } = require("../../../queries");
+const { GetActiveEvent, GetEvent, CreateRsvp, GetPaymentByTrxID, GetEventByParam, GetRsvpByEventID, UpdateRsvpStatus, UpdateManyRsvpStatus, GetRsvpByEmail, FindRsvpByEmailAndEvent, GenerateRsvpCode } = require("../../../queries");
 const { EventResponse, PaymentResponse } = require("../../response");
 const { EventStatuses, EventPay, RsvpStatuses } = require("../../../../config/constant");
 const { SEND_MAIL } = require("../../../service/mailjet.service");
@@ -42,7 +42,7 @@ async function book(request, response) {
 
     const event = await GetEvent(request.params.uuid);
 
-    if(value.num_of_tickets !== value.emails.length) {
+    if (value.num_of_tickets !== value.emails.length) {
       return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Number of tickets do not match number of emails." });
     }
 
@@ -73,7 +73,18 @@ async function book(request, response) {
         return o.amount;
       });
       amount = value.num_of_tickets * event_amount;
-      locations.push(event.locations);
+
+      for (const ev_el of event.locations) {
+        const ev_tk = ev_el.ticket_prices.find((f_t) => f_t.slug === value.event_type);
+        locations.push({
+          title: ev_el.title,
+          location: ev_el.location,
+          date: ev_el.date,
+          time: ev_el.time,
+          venue: ev_el.venue,
+          ticket_type: ev_tk,
+        });
+      }
     } else {
       const event_location = event.locations.find((el) => el.slug === value.event_day);
       if (!event_location) {
@@ -81,18 +92,33 @@ async function book(request, response) {
       }
       const ticket_amount = event_location.ticket_prices.find((tp) => tp.slug === value.event_type);
       amount = ticket_amount.amount * value.num_of_tickets;
-      locations.push(event_location);
+      const ev_tk = event_location.ticket_prices.find((f_t) => f_t.slug === value.event_type);
+      locations.push({
+        title: event_location.title,
+        location: event_location.location,
+        date: event_location.date,
+        time: event_location.time,
+        venue: event_location.venue,
+        ticket_type: ev_tk,
+      });
     }
     const { paymentData } = await initialize(event, "NGN", value, amount);
     if (paymentData.status === true) {
       data = paymentData.data;
       // create rsvp
       for (const email of value.emails) {
-        const isExists = await FindRsvpByEmailAndEvent(event, email);
-        if (!isExists) {
-          // Create rsvp
-          await CreateRsvp(event, value.name, email, value.emails, locations, value.phone_number, value.type, RsvpStatuses.pending);
+        let loc_codes = [];
+        for (const loc_code of locations) {
+          loc_codes.push({
+            code: await GenerateRsvpCode(event),
+            event_day: loc_code.title,
+            ticket_type: loc_code.ticket_type.type,
+            venue: loc_code.venue,
+            status: "Active",
+          });
         }
+        // Create rsvp
+        await CreateRsvp(event, value.name, email, value.emails, loc_codes, locations, value.phone_number, value.type, RsvpStatuses.pending);
       }
     }
     return response.status(StatusCodes.OK).json({
@@ -124,21 +150,29 @@ async function verify(request, response) {
     const rsvp = await GetRsvpByEventID(event._id);
     await UpdateManyRsvpStatus(event, RsvpStatuses.active);
     for (const email of rsvp.invitees) {
-      const findRsvp = await GetRsvpByEmail(email);
-      // Mail Content
-      const message = `Your RSVP code is ${findRsvp.code}`;
-      const content = {
-        email: findRsvp.email,
-        subject: "RSVP Received",
-        body: message,
-      };
-      // send email
-      await SEND_MAIL(content);
+      for (const rsvp_code of rsvp.code) {
+        const findRsvp = await GetRsvpByEmail(email);
+        // Mail Content
+        const message = `Your RSVP code is ${findRsvp.code}`;
+        const content = {
+          email: findRsvp.email,
+          templateId: 4572553,
+          variables: {
+            event_name: findRsvp.event_id.title,
+            rsvp_code: rsvp_code.code,
+            event_day: rsvp_code.event_day,
+            event_description: findRsvp.event_id.description,
+            event_location: rsvp_code.venue,
+          },
+          subject: `RSVP Code to ${rsvp_code.event_day}`,
+        };
+        // send email
+        await SEND_MAIL(content);
+      }
     }
     return response.status(StatusCodes.OK).json({
       message: "RSVP sent successfully",
       status: "success",
-      payment: PaymentResponse(payment),
     });
   } catch (error) {
     const message = error.message ? error.message : "Error getting events";

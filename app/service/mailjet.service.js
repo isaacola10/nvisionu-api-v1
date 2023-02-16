@@ -1,10 +1,10 @@
-const config = require('../../config')
-const MailJet = require('node-mailjet')
+const config = require("../../config");
+const MailJet = require("node-mailjet");
 
 const mailjet = new MailJet({
   apiKey: config.mailjet.key,
-  apiSecret: config.mailjet.secret
-})
+  apiSecret: config.mailjet.secret,
+});
 
 const SEND_MAIL = async (content) => {
   const request = mailjet.post("send", { version: "v3.1" }).request({
@@ -19,7 +19,7 @@ const SEND_MAIL = async (content) => {
             Email: content.email,
           },
         ],
-        TemplateID: content.templateID,
+        TemplateID: content.templateId,
         TemplateLanguage: true,
         Subject: content.subject,
         Variables: content.variables,
