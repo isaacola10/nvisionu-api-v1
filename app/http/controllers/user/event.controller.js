@@ -131,6 +131,32 @@ async function book(request, response) {
   }
 }
 
+async function book_data(request, response) {
+  const { error, value } = Joi.object({
+    book_all: Joi.boolean().required(),
+  }).validate(request.body);
+  if (error) {
+    return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: error.message.replace(/['"]/g, "") });
+  }
+  try {
+    const event = await GetEvent(request.params.uuid);
+    if (!event) {
+      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Event not found" });
+    }
+    let ticket_prices = [];
+
+    if (value.book_all) {
+      for (const location of event.locations) {
+        ticket_prices.push(location.ticket_prices);
+      }
+    }
+    return response.status(StatusCodes.OK).json({ ticket_prices });
+  } catch (error) {
+    const message = error.message ? error.message : "Error getting event data";
+    return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
+  }
+}
+
 async function verify(request, response) {
   const reference = request.query.reference;
   try {
@@ -178,4 +204,4 @@ async function verify(request, response) {
   }
 }
 
-module.exports = { index, book, verify };
+module.exports = { index, book, book_data, verify };

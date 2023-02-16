@@ -5,6 +5,7 @@ const EventController = require("../../app/http/controllers/user/event.controlle
 // Auth route
 router.get("/", EventController.index);
 router.post("/rsvp/:uuid", EventController.book);
+router.post("/rsvp/:uuid/create", EventController.book_data);
 router.get("/rsvp/verify", EventController.verify);
 
 module.exports = router;
