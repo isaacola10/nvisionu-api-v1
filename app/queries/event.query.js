@@ -18,7 +18,7 @@ async function GetEventByParam(param) {
   return EVENT.findOne(param)
 }
 
-async function CreateEvent(title, description, schedule_type, locations, event_image, event_additional_images, session=null) {
+async function CreateEvent(title, description, schedule_type, locations, event_image, event_additional_images, book_all, session=null) {
   await UpdateEvents()
 
   return new EVENT({
@@ -28,18 +28,24 @@ async function CreateEvent(title, description, schedule_type, locations, event_i
     locations,
     event_image,
     event_additional_images,
-  }).save({session})
+    book_all,
+  }).save({ session });
 }
 
-async function UpdateEvent(event, title, description, schedule_type, locations, event_image, event_additional_images, session=null) {
-  return EVENT.findOneAndUpdate({uuid: event.uuid}, {
-    title,
-    description,
-    schedule_type,
-    locations,
-    event_image,
-    event_additional_images,
-  }, {new: true, session})
+async function UpdateEvent(event, title, description, schedule_type, locations, event_image, event_additional_images, book_all, session = null) {
+  return EVENT.findOneAndUpdate(
+    { uuid: event.uuid },
+    {
+      title,
+      description,
+      schedule_type,
+      locations,
+      event_image,
+      event_additional_images,
+      book_all,
+    },
+    { new: true, session }
+  );
 }
 
 async function DeleteEvent(event) {

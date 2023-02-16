@@ -26,6 +26,10 @@ const EventSchema = new mongoose.Schema({
     type: Object,
     required: false
   },
+  book_all: {
+    type: Boolean,
+    required: true
+  },
   event_image: {
     type: String,
     required: true

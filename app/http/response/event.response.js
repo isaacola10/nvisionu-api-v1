@@ -7,6 +7,7 @@ function EventResponse(event) {
     locations: event.locations,
     event_image: event.event_image,
     additional_images: event.event_additional_images,
+    book_all: event.book_all,
     status: event.status
   }
 }

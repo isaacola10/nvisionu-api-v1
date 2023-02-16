@@ -66,6 +66,7 @@ async function store(request, response) {
       })
       .required(),
     additional_images: Joi.array().items(Joi.string()).allow(null),
+    book_all: Joi.boolean().required()
   }).validate(request.body);
   if (error) {
     return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: error.message.replace(/['"]/g, "") });
@@ -92,7 +93,7 @@ async function store(request, response) {
       });
     }
     // create event
-    const event = await CreateEvent(value.title, value.description, value.schedule_type, locations, value.event_image, value.additional_images);
+    const event = await CreateEvent(value.title, value.description, value.schedule_type, locations, value.event_image, value.additional_images, value.book_all);
     return response.status(StatusCodes.OK).json({
       message: "Event created successfully",
       event: EventResponse(event),
@@ -127,6 +128,7 @@ async function update(request, response) {
       })
       .required(),
     additional_images: Joi.array().items(Joi.string()).allow(null),
+    book_all: Joi.boolean().required(),
   }).validate(request.body);
   if (error) {
     return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: error.message.replace(/['"]/g, "") });
@@ -158,7 +160,7 @@ async function update(request, response) {
       });
     }
     // Update event
-    await UpdateEvent(event, value.title, value.description, value.schedule_type, locations, value.image, value.additional_images);
+    await UpdateEvent(event, value.title, value.description, value.schedule_type, locations, value.image, value.additional_images, value.book_all);
     return response.status(StatusCodes.OK).json({
       message: "Event updated successfully",
     });

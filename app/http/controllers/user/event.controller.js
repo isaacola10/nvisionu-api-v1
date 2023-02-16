@@ -1,4 +1,4 @@
-const { StatusCodes, UNPROCESSABLE_ENTITY } = require("http-status-codes");
+const { StatusCodes } = require("http-status-codes");
 const Joi = require("joi");
 const { GetActiveEvent, GetEvent, CreateRsvp, GetPaymentByTrxID, GetEventByParam, GetRsvpByEventID, UpdateRsvpStatus, UpdateManyRsvpStatus, GetRsvpByEmail, FindRsvpByEmailAndEvent, GenerateRsvpCode } = require("../../../queries");
 const { EventResponse, PaymentResponse } = require("../../response");
@@ -151,9 +151,7 @@ async function verify(request, response) {
     await UpdateManyRsvpStatus(event, RsvpStatuses.active);
     for (const email of rsvp.invitees) {
       for (const rsvp_code of rsvp.code) {
-        const findRsvp = await GetRsvpByEmail(email);
-        // Mail Content
-        const message = `Your RSVP code is ${findRsvp.code}`;
+        const findRsvp = await GetRsvpByEmail(event, email);
         const content = {
           email: findRsvp.email,
           templateId: 4572553,
