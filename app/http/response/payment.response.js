@@ -10,7 +10,8 @@ function PaymentResponse(payment) {
     email: payment.email,
     amount: payment.amount,
     meta: payment.meta,
-    status: payment.status
+    status: payment.status,
+    createdAt: payment.createdAt
   }
 }
 
