@@ -2,11 +2,11 @@ const RSVP = require("../models/rsvp.model");
 const { RsvpStatuses } = require("../../config/constant");
 
 async function GetRsvps() {
-  return RSVP.find({});
+  return RSVP.find({}).populate({ path: "event_id", model: "Event" });
 }
 
 async function GetRsvp(uuid) {
-  return RSVP.findOne({ uuid });
+  return RSVP.findOne({ uuid }).populate({ path: "event_id", model: "Event" });
 }
 
 async function GetRsvpByEmail(event, email) {
@@ -18,7 +18,7 @@ async function GetRsvpByEventID(event_id) {
 }
 
 async function FindRsvpByEventAndCode(event, code) {
-  return RSVP.findOne({ event_id: event._id, code });
+  return RSVP.findOne({ event_id: event._id, code }).populate({ path: "event_id", model: "Event" });
 }
 
 async function FindRsvpByCode(query) {
@@ -26,7 +26,7 @@ async function FindRsvpByCode(query) {
 }
 
 async function FindRsvpByEmailAndEvent(event, email) {
-  return RSVP.findOne({ event_id: event._id, email });
+  return RSVP.findOne({ event_id: event._id, email }).populate({ path: "event_id", model: "Event" });
 }
 
 async function CreateRsvp(event, name, email, invitees, code, locations, phone_number, type, status = RsvpStatuses.active) {
