@@ -175,7 +175,7 @@ async function verify(request, response) {
       let code_str = `${code.event_day}-${code.code}<br/>`;
       temp_codes.push(code_str);
     }
-
+    let event_data = event.locations.find((el) => findRsvp.code[0].event_day === el.title);
     let new_string = JSON.stringify(temp_codes).replace(/"|,/g, " ").replace("[", "").replace("]", "");
     // return response.status(StatusCodes.OK).json({ new_string });
     const content = {
@@ -185,6 +185,9 @@ async function verify(request, response) {
         event_name: findRsvp.event_id.title,
         event_description: findRsvp.event_id.description,
         codes: new_string,
+        date: event_data.date,
+        venue: event_data.venue,
+        time: event_data.time,
       },
       subject: `RSVP Code for ${findRsvp.event_id.title}`,
     };
