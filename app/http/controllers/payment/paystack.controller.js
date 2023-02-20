@@ -1,5 +1,5 @@
 const https = require("https");
-const SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const SECRET_KEY = process.env.PAYSTACK_LIVE_SECRET_KEY;
 const initializePayment = (data) => {
   // const callback_url = process.env.NODE_ENV === "production" ? "https://fairmall-v1.herokuapp.com/api/v1/user/order/payment/verify" : "http://localhost:5007/api/v1/user/order/payment/verify"
   const callback_url = "https://visiondaynigeria.com/success";
