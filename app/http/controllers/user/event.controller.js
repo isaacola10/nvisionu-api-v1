@@ -106,8 +106,8 @@ async function book(request, response) {
     if (paymentData.status === true) {
       data = paymentData.data;
       // create rsvp
+      let loc_codes = [];
       for (const email of value.emails) {
-        let loc_codes = [];
         for (const loc_code of locations) {
           loc_codes.push({
             code: await GenerateRsvpCode(event),
@@ -117,9 +117,9 @@ async function book(request, response) {
             status: "Active",
           });
         }
-        // Create rsvp
-        await CreateRsvp(event, value.name, email, value.emails, loc_codes, locations, value.phone_number, value.type, RsvpStatuses.pending);
       }
+      // Create rsvp
+      await CreateRsvp(event, value.name, value.emails[0], value.emails, loc_codes, locations, value.phone_number, value.type, RsvpStatuses.pending);
     }
     return response.status(StatusCodes.OK).json({
       message: "RSVP sent successfully",
@@ -173,27 +173,28 @@ async function verify(request, response) {
       });
     }
     await verification(payment);
-    const rsvp = await GetRsvpByEventID(event._id);
-    await UpdateManyRsvpStatus(event, RsvpStatuses.active);
-    for (const email of rsvp.invitees) {
-      for (const rsvp_code of rsvp.code) {
-        const findRsvp = await GetRsvpByEmail(event, email);
-        const content = {
-          email: findRsvp.email,
-          templateId: 4572553,
-          variables: {
-            event_name: findRsvp.event_id.title,
-            rsvp_code: rsvp_code.code,
-            event_day: rsvp_code.event_day,
-            event_description: findRsvp.event_id.description,
-            event_location: rsvp_code.venue,
-          },
-          subject: `RSVP Code to ${rsvp_code.event_day}`,
-        };
-        // send email
-        await SEND_MAIL(content);
-      }
+    const findRsvp = await GetRsvpByEmail(event, payment.email);
+    let temp_codes = [];
+    for (const code of findRsvp.code) {
+      temp_codes.push(code.code);
     }
+
+    let new_string = JSON.stringify(temp_codes).replace(/"|,/g, " ").replace("[", "").replace("]", "");
+    const content = {
+      email: findRsvp.email,
+      templateId: 4572553,
+      variables: {
+        event_name: findRsvp.event_id.title,
+        event_description: findRsvp.event_id.description,
+        codes: new_string,
+      },
+      subject: `RSVP Code`,
+    };
+
+    await UpdateManyRsvpStatus(event, RsvpStatuses.active);
+
+    await SEND_MAIL(content);
+
     return response.status(StatusCodes.OK).json({
       message: "RSVP sent successfully",
       status: "success",

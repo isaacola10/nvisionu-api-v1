@@ -10,7 +10,7 @@ async function GetRsvp(uuid) {
 }
 
 async function GetRsvpByEmail(event, email) {
-  return RSVP.findOne({ event_id: event._id, email }).populate({ path: "event_id", model: "Event" });
+  return RSVP.findOne({ event_id: event._id, email }).sort({ $natural: -1 }).limit(1).populate({ path: "event_id", model: "Event" });
 }
 
 async function GetRsvpByEventID(event_id) {
