@@ -188,7 +188,7 @@ async function verify(request, response) {
         event_description: findRsvp.event_id.description,
         codes: new_string,
       },
-      subject: `RSVP Code`,
+      subject: `RSVP Code for ${findRsvp.event_id.title}`,
     };
 
     await UpdateManyRsvpStatus(event, RsvpStatuses.active);
