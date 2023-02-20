@@ -27,10 +27,6 @@ const RsvpSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    invitees: {
-      type: Object,
-      required: true,
-    },
     locations: {
       type: Object,
       required: true,

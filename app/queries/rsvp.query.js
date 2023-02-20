@@ -29,12 +29,11 @@ async function FindRsvpByEmailAndEvent(event, email) {
   return RSVP.findOne({ event_id: event._id, email }).populate({ path: "event_id", model: "Event" });
 }
 
-async function CreateRsvp(event, name, email, invitees, code, locations, phone_number, type, status = RsvpStatuses.active) {
+async function CreateRsvp(event, name, email, code, locations, phone_number, type, status = RsvpStatuses.active) {
   return new RSVP({
     event_id: event._id,
     name,
     email,
-    invitees,
     locations,
     phone_number,
     type,

@@ -8,7 +8,6 @@ function RsvpResponse(rsvp) {
     },
     phone_number: rsvp.phone_number,
     email: rsvp.email,
-    invitees: rsvp.invitees,
     type: rsvp.type,
     locations: rsvp.locations,
     code: rsvp.code,

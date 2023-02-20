@@ -23,7 +23,7 @@ async function book(request, response) {
   const { error, value } = Joi.object({
     name: Joi.string().required(),
     phone_number: Joi.string().required(),
-    emails: Joi.array().items(Joi.string().email()).required(),
+    email: Joi.string().email().required(),
     book_all: Joi.boolean().required(),
     event_type: Joi.string().required(),
     event_day: Joi.when("book_all", {
@@ -41,10 +41,6 @@ async function book(request, response) {
     let locations = [];
 
     const event = await GetEvent(request.params.uuid);
-
-    if (value.num_of_tickets !== value.emails.length) {
-      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Number of tickets do not match number of emails." });
-    }
 
     if (!event) {
       return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Event not found" });
@@ -107,7 +103,7 @@ async function book(request, response) {
       data = paymentData.data;
       // create rsvp
       let loc_codes = [];
-      for (const email of value.emails) {
+      for (let i = 0; i < value.num_of_tickets; i++) {
         for (const loc_code of locations) {
           loc_codes.push({
             code: await GenerateRsvpCode(event),
@@ -119,7 +115,7 @@ async function book(request, response) {
         }
       }
       // Create rsvp
-      await CreateRsvp(event, value.name, value.emails[0], value.emails, loc_codes, locations, value.phone_number, value.type, RsvpStatuses.pending);
+      await CreateRsvp(event, value.name, value.email, loc_codes, locations, value.phone_number, value.type, RsvpStatuses.pending);
     }
     return response.status(StatusCodes.OK).json({
       message: "RSVP sent successfully",
@@ -176,10 +172,12 @@ async function verify(request, response) {
     const findRsvp = await GetRsvpByEmail(event, payment.email);
     let temp_codes = [];
     for (const code of findRsvp.code) {
-      temp_codes.push(code.code);
+      let code_str = `${code.event_day}-${code.code}<br/>`;
+      temp_codes.push(code_str);
     }
 
     let new_string = JSON.stringify(temp_codes).replace(/"|,/g, " ").replace("[", "").replace("]", "");
+    // return response.status(StatusCodes.OK).json({ new_string });
     const content = {
       email: findRsvp.email,
       templateId: 4572553,
