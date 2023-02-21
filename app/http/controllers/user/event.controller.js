@@ -6,6 +6,7 @@ const { EventStatuses, EventPay, RsvpStatuses } = require("../../../../config/co
 const { SEND_MAIL } = require("../../../service/mailjet.service");
 const { initialize, verification } = require("../payment/payment.controller");
 const _ = require("lodash");
+const moment = require("moment");
 
 async function index(request, response) {
   try {
@@ -155,54 +156,61 @@ async function book_data(request, response) {
 
 async function verify(request, response) {
   const reference = request.query.reference;
-  // try {
-  const payment = await GetPaymentByTrxID(reference);
-  if (!payment) {
-    return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message: "Payment not found",
-    });
-  }
-  const event = await GetEventByParam({ _id: payment.event_id });
-  if (!event) {
-    return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message: "Event not found",
-    });
-  }
-  await verification(payment);
-  const findRsvp = await GetRsvpByEmail(event, payment.email);
-  let event_data = event.locations.find((el) => findRsvp.code[0].event_day === el.title);
-  let temp_codes = [];
-  for (const code of findRsvp.code) {
-    let code_str = `<h3>(${event_data.location}) ${event_data.title} - ${code.code}</h3>`;
-    temp_codes.push(code_str);
-  }
-  let new_string = JSON.stringify(temp_codes).replace(/"|,/g, "").replace("[", "").replace("]", "");
-  const content = {
-    email: findRsvp.email,
-    templateId: 4599818,
-    variables: {
-      event_name: findRsvp.event_id.title,
-      event_description: findRsvp.event_id.description,
-      codes: new_string,
-      date: event_data.date,
-      venue: event_data.venue,
-      time: event_data.time,
-    },
-    subject: `RSVP Code for ${findRsvp.event_id.title} Event`,
-  };
+  try {
+    const payment = await GetPaymentByTrxID(reference);
+    if (!payment) {
+      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        message: "Payment not found",
+      });
+    }
+    const event = await GetEventByParam({ _id: payment.event_id });
+    if (!event) {
+      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        message: "Event not found",
+      });
+    }
+    const data = await verification(payment);
 
-  await UpdateManyRsvpStatus(event, RsvpStatuses.active);
+    if (data.status === true) {
+      const findRsvp = await GetRsvpByEmail(event, payment.email);
+      let event_data = event.locations.find((el) => findRsvp.code[0].event_day === el.title);
+      let temp_codes = [];
+      for (const code of findRsvp.code) {
+        let code_str = `<h3>(${event_data.location}) ${event_data.title} - ${code.code}</h3>`;
+        temp_codes.push(code_str);
+      }
+      let new_string = JSON.stringify(temp_codes).replace(/"|,/g, "").replace("[", "").replace("]", "");
+      const content = {
+        email: findRsvp.email,
+        templateId: 4599818,
+        variables: {
+          event_name: findRsvp.event_id.title,
+          event_description: findRsvp.event_id.description,
+          codes: new_string,
+          date: moment(event_data.date).format("MMMM Do YYYY"),
+          venue: event_data.venue,
+          time: moment(event_data.time, "HH:mm:ss").format("hh:mm A"),
+        },
+        subject: `RSVP Code for ${findRsvp.event_id.title} Event`,
+      };
 
-  await SEND_MAIL(content);
+      await UpdateManyRsvpStatus(event, RsvpStatuses.active);
 
-  return response.status(StatusCodes.OK).json({
-    message: "RSVP sent successfully",
-    status: "success",
-  });
-  // } catch (error) {
-  //   const message = error.message ? error.message : "Error getting events";
-  //   return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
-  // }
+      await SEND_MAIL(content);
+
+      return response.status(StatusCodes.OK).json({
+        message: "RSVP sent successfully",
+        status: "success",
+      });
+    } else {
+      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        message: data.message,
+      });
+    }
+  } catch (error) {
+    const message = error.message ? error.message : "Error getting events";
+    return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
+  }
 }
 
 module.exports = { index, book, book_data, verify };

@@ -1,5 +1,6 @@
 const https = require("https");
 const SECRET_KEY = process.env.PAYSTACK_LIVE_SECRET_KEY;
+// const SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const initializePayment = (data) => {
   // const callback_url = "http://localhost:5007/success";
   const callback_url = "https://visiondaynigeria.com/success";
