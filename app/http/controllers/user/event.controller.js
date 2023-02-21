@@ -155,55 +155,54 @@ async function book_data(request, response) {
 
 async function verify(request, response) {
   const reference = request.query.reference;
-  try {
-    const payment = await GetPaymentByTrxID(reference);
-    if (!payment) {
-      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-        message: "Payment not found",
-      });
-    }
-    const event = await GetEventByParam({ _id: payment.event_id });
-    if (!event) {
-      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-        message: "Event not found",
-      });
-    }
-    await verification(payment);
-    const findRsvp = await GetRsvpByEmail(event, payment.email);
-    let temp_codes = [];
-    for (const code of findRsvp.code) {
-      let code_str = `${code.event_day}-${code.code}<br/>`;
-      temp_codes.push(code_str);
-    }
-    let event_data = event.locations.find((el) => findRsvp.code[0].event_day === el.title);
-    let new_string = JSON.stringify(temp_codes).replace(/"|,/g, " ").replace("[", "").replace("]", "");
-    // return response.status(StatusCodes.OK).json({ new_string });
-    const content = {
-      email: findRsvp.email,
-      templateId: 4572553,
-      variables: {
-        event_name: findRsvp.event_id.title,
-        event_description: findRsvp.event_id.description,
-        codes: new_string,
-        date: event_data.date,
-        venue: event_data.venue,
-        time: event_data.time,
-      },
-      subject: `RSVP Code for ${findRsvp.event_id.title}`,
-    };
-
-    await UpdateManyRsvpStatus(event, RsvpStatuses.active);
-
-    await SEND_MAIL(content);
-
-    return response.status(StatusCodes.OK).json({
-      message: "RSVP sent successfully",
-      status: "success",
+  // try {
+  const payment = await GetPaymentByTrxID(reference);
+  if (!payment) {
+    return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: "Payment not found",
     });
-  } catch (error) {
-    const message = error.message ? error.message : "Error getting events";
-    return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
   }
+  const event = await GetEventByParam({ _id: payment.event_id });
+  if (!event) {
+    return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: "Event not found",
+    });
+  }
+  await verification(payment);
+  const findRsvp = await GetRsvpByEmail(event, payment.email);
+  let event_data = event.locations.find((el) => findRsvp.code[0].event_day === el.title);
+  let temp_codes = [];
+  for (const code of findRsvp.code) {
+    let code_str = `<h3>(${event_data.location}) ${event_data.title} - ${code.code}</h3>`;
+    temp_codes.push(code_str);
+  }
+  let new_string = JSON.stringify(temp_codes).replace(/"|,/g, "").replace("[", "").replace("]", "");
+  const content = {
+    email: findRsvp.email,
+    templateId: 4599818,
+    variables: {
+      event_name: findRsvp.event_id.title,
+      event_description: findRsvp.event_id.description,
+      codes: new_string,
+      date: event_data.date,
+      venue: event_data.venue,
+      time: event_data.time,
+    },
+    subject: `RSVP Code for ${findRsvp.event_id.title} Event`,
+  };
+
+  await UpdateManyRsvpStatus(event, RsvpStatuses.active);
+
+  await SEND_MAIL(content);
+
+  return response.status(StatusCodes.OK).json({
+    message: "RSVP sent successfully",
+    status: "success",
+  });
+  // } catch (error) {
+  //   const message = error.message ? error.message : "Error getting events";
+  //   return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
+  // }
 }
 
 module.exports = { index, book, book_data, verify };
