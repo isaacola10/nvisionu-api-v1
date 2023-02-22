@@ -2,7 +2,7 @@ const RSVP = require("../models/rsvp.model");
 const { RsvpStatuses } = require("../../config/constant");
 
 async function GetRsvps() {
-  return RSVP.find({}).populate({ path: "event_id", model: "Event" });
+  return RSVP.find({}).populate({ path: "event_id", model: "Event" }).sort({ createdAt: -1 });
 }
 
 async function GetRsvp(uuid) {
@@ -74,4 +74,8 @@ async function VerifyRsvp(rsvp, code) {
   );
 }
 
-module.exports = { GetRsvp, GetRsvps, CreateRsvp, VerifyRsvp, UpdateRsvpStatus, GetRsvpByEventID, UpdateManyRsvpStatus, GetRsvpByEmail, FindRsvpByEmailAndEvent, FindRsvpByEventAndCode, FindRsvpByCode, GenerateRsvpCode };
+async function FindTicketsByLocation(location) {
+  return RSVP.find({ "locations.location": location });
+}
+
+module.exports = { GetRsvp, FindTicketsByLocation, GetRsvps, CreateRsvp, VerifyRsvp, UpdateRsvpStatus, GetRsvpByEventID, UpdateManyRsvpStatus, GetRsvpByEmail, FindRsvpByEmailAndEvent, FindRsvpByEventAndCode, FindRsvpByCode, GenerateRsvpCode };

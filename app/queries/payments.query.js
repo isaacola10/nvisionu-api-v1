@@ -1,15 +1,15 @@
-const PAYMENT = require("../models/payment.model")
+const PAYMENT = require("../models/payment.model");
 
 async function GetAllPayments() {
-  return PAYMENT.find({}).populate({ path: "event_id", model: "Event" })
+  return PAYMENT.find({}).populate({ path: "event_id", model: "Event" }).sort({ createdAt: -1 });
 }
 
 async function GetPaymentByUUID(uuid) {
-  return PAYMENT.findOne({uuid})
+  return PAYMENT.findOne({ uuid });
 }
 
 async function GetPaymentByTrxID(transaction_id) {
-  return PAYMENT.findOne({transaction_id})
+  return PAYMENT.findOne({ transaction_id });
 }
 
 async function CreatePayment(transaction_id, event, name, email, amount, meta) {
@@ -19,12 +19,12 @@ async function CreatePayment(transaction_id, event, name, email, amount, meta) {
     name,
     email,
     amount,
-    meta
-  }).save({})
+    meta,
+  }).save({});
 }
 
 async function UpdatePayment(payment, status) {
-  return PAYMENT.findOneAndUpdate({uuid: payment.uuid}, {status}, {new: true})
+  return PAYMENT.findOneAndUpdate({ uuid: payment.uuid }, { status }, { new: true });
 }
 
-module.exports = {GetAllPayments, GetPaymentByUUID, GetPaymentByTrxID, CreatePayment, UpdatePayment}
+module.exports = { GetAllPayments, GetPaymentByUUID, GetPaymentByTrxID, CreatePayment, UpdatePayment };
