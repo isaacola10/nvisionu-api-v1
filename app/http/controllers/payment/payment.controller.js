@@ -15,9 +15,6 @@ async function initialize(event, currency, value, amount) {
 
 async function verification(payment) {
   const data = await verifyPayment(payment.transaction_id);
-  console.log("====================================");
-  console.log({ data });
-  console.log("====================================");
   if (data.status === true) {
     await UpdatePayment(payment, PaymentStatuses.successful);
   } else {

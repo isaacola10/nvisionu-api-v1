@@ -1,6 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const Joi = require("joi");
 const { GetRsvps, FindTicketsByLocation } = require("../../../queries");
+const { RsvpCollectionResponse } = require("../../response");
 
 async function index(request, response) {
   try {
@@ -41,7 +42,7 @@ async function tickets(request, response) {
 
     return response.status(StatusCodes.OK).json({
       message: "Dashboard data fetched successfully",
-      location,
+      location: RsvpCollectionResponse(location),
       num_of_tickets: total_tickets.length,
     });
   } catch (error) {

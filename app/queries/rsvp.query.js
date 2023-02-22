@@ -75,7 +75,7 @@ async function VerifyRsvp(rsvp, code) {
 }
 
 async function FindTicketsByLocation(location) {
-  return RSVP.find({ "locations.location": location });
+  return RSVP.find({ "locations.location": location }).populate({ path: "event_id", model: "Event" });
 }
 
 module.exports = { GetRsvp, FindTicketsByLocation, GetRsvps, CreateRsvp, VerifyRsvp, UpdateRsvpStatus, GetRsvpByEventID, UpdateManyRsvpStatus, GetRsvpByEmail, FindRsvpByEmailAndEvent, FindRsvpByEventAndCode, FindRsvpByCode, GenerateRsvpCode };

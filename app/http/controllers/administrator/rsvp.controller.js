@@ -1,7 +1,8 @@
 const { StatusCodes } = require("http-status-codes");
 const Joi = require("joi");
 const { RsvpCollectionResponse, RsvpResponse } = require("../../response");
-const { GetRsvps, GetRsvp } = require("../../../queries");
+const { GetRsvps, GetRsvp, GetPaymentByTrxID } = require("../../../queries");
+const { PaymentStatuses } = require("../../../../config/constant");
 
 async function index(request, response) {
   try {
@@ -39,4 +40,46 @@ async function show(request, response) {
   }
 }
 
-module.exports = { index, show };
+async function check(request, response) {
+  const { error, value } = Joi.object({
+    reference_id: Joi.string().required(),
+  }).validate(request.body);
+  if (error) {
+    return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: error.message.replace(/['"]/g, "") });
+  }
+  try {
+    const payment = await GetPaymentByTrxID(value.reference_id);
+    if (!payment) {
+      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Payment not found" });
+    }
+    if (payment.status !== PaymentStatuses.successful) {
+      return response.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ message: "Payment not successful" });
+    }
+    // Return true check
+    return response.status(StatusCodes.OK).json({
+      message: "Check successful",
+      check: true,
+    });
+  } catch (error) {
+    const message = error.message ? error.message : "Error checking payment reference";
+    return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
+  }
+}
+
+async function create(request, response) {
+  try {
+  } catch (error) {
+    const message = error.message ? error.message : "Error fetching data";
+    return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
+  }
+}
+
+async function store(request, response) {
+  try {
+  } catch (error) {
+    const message = error.message ? error.message : "Error storing rsvp";
+    return response.status(StatusCodes.NOT_ACCEPTABLE).json({ message });
+  }
+}
+
+module.exports = { index, show, check, create, store };
