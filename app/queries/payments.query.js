@@ -9,7 +9,7 @@ async function GetPaymentByUUID(uuid) {
 }
 
 async function GetPaymentByTrxID(transaction_id) {
-  return PAYMENT.findOne({ transaction_id });
+  return PAYMENT.findOne({ transaction_id }).populate({ path: "event_id", model: "Event" });
 }
 
 async function CreatePayment(transaction_id, event, name, email, amount, meta) {
