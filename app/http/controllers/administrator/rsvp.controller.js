@@ -141,7 +141,7 @@ async function store(request, response) {
       }
     }
     // Create rsvp
-    const findRsvp = await CreateRsvp(event, value.name, "isaacolaolu10@gmail.com", loc_codes, locations, value.phone_number, value.type, RsvpStatuses.active);
+    const findRsvp = await CreateRsvp(event, value.name, payment.email, loc_codes, locations, value.phone_number, value.type, RsvpStatuses.active);
 
     let event_data = event.locations.find((el) => findRsvp.code[0].event_day === el.title);
     let temp_codes = [];
